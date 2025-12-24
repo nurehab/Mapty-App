@@ -62,7 +62,11 @@ class App {
   #workouts = [];
   #mapZoomIn = 13;
   constructor() {
+    // get user's position on map
     this._getPosition();
+    // get workouts from local storage
+    this._getLocalStorage();
+    // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._setPopupLoc.bind(this));
@@ -81,7 +85,7 @@ class App {
   _loadMap(pos) {
     const { latitude } = pos.coords;
     const { longitude } = pos.coords;
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
     const coords = [latitude, longitude];
     this.#map = L.map('map').setView(coords, this.#mapZoomIn);
 
@@ -91,6 +95,8 @@ class App {
     }).addTo(this.#map);
     // hena el - on - de yo3tbr event listener bs f el library beta3t Leafleat
     this.#map.on('click', this._showForm.bind(this));
+    // get marks on the map after load
+    this.#workouts.forEach(wo => this._renderWorkourMarker(wo));
   }
 
   _showForm(mapEv) {
@@ -148,7 +154,7 @@ class App {
     }
     // push objects to workout Array
     this.#workouts.push(workout);
-    console.log(workout);
+
     // rendering on the map
     this._renderWorkourMarker(workout);
 
@@ -156,6 +162,8 @@ class App {
     this._renderWorkourList(workout);
     // hide values + clear input fields
     this._hideForm();
+    // Set local storage to all workouts
+    this._setLocalStorage();
   }
   _renderWorkourMarker(workout) {
     L.marker(workout.coords)
@@ -237,7 +245,21 @@ class App {
       },
     });
     // using public Interface
-    workout.click();
+    // workout.click();
+  }
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+  _getLocalStorage() {
+    const work = JSON.parse(localStorage.getItem('workouts'));
+    if (!work) return;
+    this.#workouts = work;
+    this.#workouts.forEach(wo => this._renderWorkourList(wo));
+  }
+  // puplic Interface
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
